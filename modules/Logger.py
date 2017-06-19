@@ -95,7 +95,7 @@ class Logger(object):
         self.refreshStatus()
 
     def log_error(self, msg):
-        log_message = self.timestamp() + ' Error: ' + msg
+        log_message = self.timestamp() + ' Error: ' + str(msg)
         self.output.printline(log_message)
         if type(self.output) is JsonOutput:
             print log_message

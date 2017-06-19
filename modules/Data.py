@@ -45,6 +45,8 @@ def get_total_lent():
     crypto_lent = api.return_active_loans()
     total_lent = {}
     rate_lent = {}
+    loan_count = {}
+    loans = {}
     for item in crypto_lent["provided"]:
         item_str = item["amount"].encode("utf-8")
         item_float = Decimal(item_str)
@@ -55,12 +57,16 @@ def get_total_lent():
             crypto_lent_rate = rate_lent[item["currency"]] + (item_rate_float * item_float)
             total_lent[item["currency"]] = crypto_lent_sum
             rate_lent[item["currency"]] = crypto_lent_rate
+            loan_count[item["currency"]] += 1
+            loans[item["currency"]].append(item)
         else:
             crypto_lent_sum = item_float
             crypto_lent_rate = item_rate_float * item_float
             total_lent[item["currency"]] = crypto_lent_sum
             rate_lent[item["currency"]] = crypto_lent_rate
-    return [total_lent, rate_lent]
+            loan_count[item["currency"]] = 1
+            loans[item["currency"]] = [item]
+    return [total_lent, rate_lent, loan_count, loans]
 
 
 def timestamp():
@@ -68,11 +74,11 @@ def timestamp():
     return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def stringify_total_lent(total_lent, rate_lent):
+def stringify_total_lent(total_lent, rate_lent, loan_count, all_loans):
     result = 'Lent: '
     for key in sorted(total_lent):
         average_lending_rate = Decimal(rate_lent[key] * 100 / total_lent[key])
-        result += '[%.4f %s @ %.4f%%] ' % (Decimal(total_lent[key]), key, average_lending_rate)
+        result += '[%.6f %s @ %.6f%% w/ %d loans] ' % (Decimal(total_lent[key]), key, average_lending_rate, loan_count[key])
         log.updateStatusValue(key, "lentSum", total_lent[key])
         log.updateStatusValue(key, "averageLendingRate", average_lending_rate)
     return result

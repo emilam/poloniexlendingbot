@@ -9,6 +9,7 @@ var Month = new Timespan("Month", 30);
 var Year = new Timespan("Year", 365);
 var refreshRate = 30;
 var timespans = [];
+var currentLoans = {};
 var summaryCoinRate, summaryCoin;
 var earningsOutputCoinRate, earningsOutputCoin;
 var outputCurrencyDisplayMode = 'all'
@@ -69,8 +70,39 @@ function printFloat(value, precision) {
     return result = isNaN(result) ? '0' : result.toFixed(precision);
 }
 
+function timeSince(date) {
+  var now = new Date();
+  var now_utc = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+  var seconds = Math.floor((now_utc - date) / 1000);
+
+  var interval = Math.floor(seconds / 31536000);
+
+  if (interval > 1) {
+    return interval + " years";
+  }
+  interval = Math.floor(seconds / 2592000);
+  if (interval > 1) {
+    return interval + " months";
+  }
+  interval = Math.floor(seconds / 86400);
+  if (interval > 1) {
+    return interval + " days";
+  }
+  interval = Math.floor(seconds / 3600);
+  if (interval > 1) {
+    return interval + " hours";
+  }
+  interval = Math.floor(seconds / 60);
+  if (interval > 1) {
+    return interval + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+}
+
 function updateRawValues(rawData){
     var table = document.getElementById("detailsTable");
+    var currentLoansList = document.getElementById("currentLoans");
+    currentLoansList.innerHTML = "";
     table.innerHTML = "";
     var currencies = Object.keys(rawData);
     var totalBTCEarnings = {};
@@ -83,7 +115,17 @@ function updateRawValues(rawData){
         var totalCoins = parseFloat(rawData[currency]['totalCoins']);
         var maxToLend = parseFloat(rawData[currency]['maxToLend']);
         var highestBidBTC = parseFloat(rawData[currency]['highestBid']);
+        var currentLoans = JSON.parse(rawData[currency]['allLoans']);
 
+        currentLoansList.innerHTML += "<tr><th>Started</th><th>Amount</th><th>Rate</th><th>Days</th></tr>";
+        currentLoans.forEach(function(eachLoan) {
+                var eachDate = Date.parse(eachLoan['date']);
+                var eachTimeSince = timeSince(eachDate) + " ago";
+                var eachRate = prettyFloat(parseFloat(eachLoan['rate']) * 100, 3);
+                var eachDuration = eachLoan['duration'];
+                var eachAmount = eachLoan['amount'];
+                currentLoansList.innerHTML += "<tr><td>" + eachTimeSince + "</td><td>" + currency + " " + eachAmount + "</td><td>" + eachRate + "%</td><td>" + eachDuration + " days </td></tr>";
+	});
         if (currency == 'BTC') {
             // no bids for BTC provided by poloniex
             // this is added so BTC can be handled like other coins for conversions

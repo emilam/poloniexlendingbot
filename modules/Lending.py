@@ -2,6 +2,7 @@
 from decimal import Decimal
 import sched
 import time
+import json
 import threading
 Config = None
 api = None
@@ -203,7 +204,10 @@ def cancel_all():
 
 
 def lend_all():
-    total_lent = Data.get_total_lent()[0]
+    get_total_lent = Data.get_total_lent()
+    total_lent = get_total_lent[0]
+    for each_cur in get_total_lent[-1]:
+        log.updateStatusValue(each_cur, "allLoans", json.dumps(get_total_lent[-1][each_cur]))
     lending_balances = api.return_available_account_balances("lending")['lending']
     if dry_run:  # just fake some numbers, if dryrun (testing)
         lending_balances = Data.get_on_order_balances()
@@ -244,6 +248,7 @@ def get_min_daily_rate(cur):
             log.log('Using custom mindailyrate ' + str(coin_cfg[cur]['minrate'] * 100) + '% for ' + cur)
     if Analysis:
         recommended_min = Analysis.get_rate_suggestion(cur)
+
         if cur_min_daily_rate < recommended_min:
             cur_min_daily_rate = recommended_min
     return Decimal(cur_min_daily_rate)
