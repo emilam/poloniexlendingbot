@@ -120,18 +120,22 @@ def get_min_loan_sizes():
 
 def get_currencies_list(option):
     if config.has_option("BOT", option):
-        full_list = ['STR', 'BTC', 'BTS', 'CLAM', 'DOGE', 'DASH', 'LTC', 'MAID', 'XMR', 'XRP', 'ETH', 'FCT']
         cur_list = []
         raw_cur_list = config.get("BOT", option).split(",")
         for raw_cur in raw_cur_list:
             cur = raw_cur.strip(' ').upper()
             if cur == 'ALL':
-                return full_list
+                return FULL_LIST
             elif cur == 'ACTIVE':
                 cur_list += Data.get_lending_currencies()
             else:
-                if cur in full_list:
+                if cur in FULL_LIST:
                     cur_list.append(cur)
+                else:
+                    print("Currency list %s has unknown \
+                          currency '%s'. Available currencies include: %s" %
+                          (option, cur, ', '.join(FULL_LIST)))
+                    exit(1)
         return list(set(cur_list))
     else:
         return []

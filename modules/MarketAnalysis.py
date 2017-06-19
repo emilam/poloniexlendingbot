@@ -3,6 +3,7 @@ import threading
 import time
 import datetime
 from cStringIO import StringIO
+from urllib2 import URLError
 
 # Bot libs
 from modules.Configuration import FULL_LIST
@@ -32,10 +33,12 @@ class MarketAnalysis(object):
                 try:
                     self.api.api_query("returnLoanOrders", {'currency': currency, 'limit': '5'})
                 except Exception as cur_ex:
-                    print "Error: You entered an incorrect currency: '" + currency + \
-                          "' to analyse the market of, please check your settings. Error message: " + str(cur_ex)
+                    if isinstance(cur_ex, URLError):
+                        print "Caught network error {0} while verifying currency types, exiting".format(cur_ex)
+                    else:
+                        print "Error: You entered an incorrect currency: '" + currency + \
+                              "' to analyse the market of, please check your settings. Error message: " + str(cur_ex)
                     exit(1)
-
                 else:
                     path = "market_data/" + currency + "_market_data.csv"
                     self.open_files[currency] = path
