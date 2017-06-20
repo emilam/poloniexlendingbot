@@ -93,6 +93,7 @@ def get_coin_cfg():
                     coin_cfg[cur]['gapmode'] = get_gap_mode(cur, 'gapmode')
                     coin_cfg[cur]['gapbottom'] = Decimal(get(cur, 'gapbottom', False, 0))
                     coin_cfg[cur]['gaptop'] = Decimal(get(cur, 'gaptop', False, coin_cfg[cur]['gapbottom']))
+                    import pdb;pdb.set_trace()
 
                 except Exception as ex:
                     ex.message = ex.message if ex.message else str(ex)
