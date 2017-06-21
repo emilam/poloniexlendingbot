@@ -58,10 +58,16 @@ function updateOutputCurrency(outputCurrency){
 // above zero accuracy will be used for float precision
 // below zero accuracy will indicate precision after must significat digit
 // strips trailing zeros
-function prettyFloat(value, accuracy) {
+function prettyFloat(value, accuracy, stripTrailing = true) {
     var precision = Math.round(Math.log10(value));
     var result = precision < 0 ? value.toFixed(Math.min((accuracy - precision), 8)) : value.toFixed(accuracy);
-    return isNaN(result) ? '0' : result.replace(/(?:\.0+|(\.\d+?)0+)$/, '$1');
+    if(isNaN(result)) {
+        return '0';
+    } else if(stripTrailing) {
+        return result.replace(/(?:\.0+|(\.\d+?)0+)$/, '$1');
+    }
+    
+    return result;
 }
 
 function printFloat(value, precision) {
@@ -121,7 +127,7 @@ function updateRawValues(rawData){
         currentLoans.forEach(function(eachLoan) {
                 var eachDate = Date.parse(eachLoan['date']);
                 var eachTimeSince = timeSince(eachDate) + " ago";
-                var eachRate = prettyFloat(parseFloat(eachLoan['rate']) * 100, 3);
+                var eachRate = prettyFloat(parseFloat(eachLoan['rate']) * 100, 3, false);
                 var eachDuration = eachLoan['duration'];
                 var eachAmount = eachLoan['amount'];
                 currentLoansList.innerHTML += "<tr><td>" + eachTimeSince + "</td><td>" + currency + " " + eachAmount + "</td><td>" + eachRate + "%</td><td>" + eachDuration + " days </td></tr>";
